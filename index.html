@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalorikalkulaator ja Toidupäevik</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-primary: #38bdf8;
+      --accent-hover: #0284c7;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+      --accent-purple: #a855f7;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 850px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .gender-select {
+      display: flex;
+      gap: 12px;
+    }
+
+    .gender-option {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .gender-option.active {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .gender-option input {
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent-primary);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(56, 189, 248, 0.1);
+    }
+
+    .results-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .target-box {
+      text-align: center;
+      padding: 16px;
+      background: rgba(56, 189, 248, 0.05);
+      border: 1px dashed var(--accent-primary);
+      border-radius: 8px;
+    }
+
+    .target-val {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+    }
+
+    .macros-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .macro-card {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid var(--card-border);
+    }
+
+    .macro-card.valk { border-top: 3px solid var(--accent-green); }
+    .macro-card.sysi { border-top: 3px solid var(--accent-orange); }
+    .macro-card.rasv { border-top: 3px solid var(--accent-purple); }
+
+    .macro-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .macro-val {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .progress-bar-container {
+      margin-top: 12px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .progress-track {
+      height: 8px;
+      background-color: #0f172a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-fill.over {
+      background-color: var(--danger);
+    }
+
+    .food-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 0.9rem;
+    }
+
+    .food-table th, .food-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .food-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .quick-add {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Kalorikalkulaator & Toidupäevik</h1>
+      <p>Arvuta täpne päevane energiavajadus ja jälgi oma toitumist</p>
+    </header>
+
+    <div class="grid">
+      <!-- 1. Arvutusvorm -->
+      <div class="card">
+        <h2>1. Sinu andmed</h2>
+        <form id="calcForm">
+          <div class="form-group">
+            <label>Sugu</label>
+            <div class="gender-select">
+              <label class="gender-option active" id="labelMale">
+                <input type="radio" name="gender" value="male" checked onchange="toggleGender('male')"> Mees
+              </label>
+              <label class="gender-option" id="labelFemale">
+                <input type="radio" name="gender" value="female" onchange="toggleGender('female')"> Naine
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Vanus (aastates)</label>
+              <input type="number" id="age" value="25" min="10" max="100" required />
+            </div>
+            <div class="form-group">
+              <label for="height">Pikkus (cm)</label>
+              <input type="number" id="height" value="175" min="100" max="230" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="weight">Kaal (kg)</label>
+            <input type="number" id="weight" value="70" step="0.1" min="30" max="250" required />
+          </div>
+
+          <div class="form-group">
+            <label for="activity">Aktiivsuse tase</label>
+            <select id="activity">
+              <option value="1.2">Istuv eluviis (vähe või üldse mitte trenni)</option>
+              <option value="1.375" selected>Kerge aktiivsus (trennis 1-3 korda nädalas)</option>
+              <option value="1.55">Mõõdukas aktiivsus (trennis 3-5 korda nädalas)</option>
+              <option value="1.725">Kõrge aktiivsus (tugev trenn 6-7 korda nädalas)</option>
+              <option value="1.9">Väga kõrge aktiivsus (raske füüsiline töö / 2x trenn päevas)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="goal">Eesmärk</label>
+            <select id="goal">
+              <option value="lose">Kaalukaotus (-500 kcal)</option>
+              <option value="maintain" selected>Kaalu säilitamine</option>
+              <option value="gain">Lihasmassi kasvatamine (+400 kcal)</option>
+            </select>
+          </div>
+
+          <button type="button" class="btn" onclick="calculateTarget()">Arvuta päevane norm</button>
+        </form>
+      </div>
+
+      <!-- 2. Arvutuse tulemused -->
+      <div class="card">
+        <h2>2. Päevane norm & Makrod</h2>
+        <div class="results-box">
+          <div class="target-box">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">PÄEVANE TARK KALOORINORM</div>
+            <div class="target-val" id="targetCal">2250 <span style="font-size: 1.2rem;">kcal</span></div>
+            <div style="font-size: 0.8rem; color: var(--accent-primary);" id="bmrText">BMR: ~1650 kcal</div>
+          </div>
+
+          <div class="macros-grid">
+            <div class="macro-card valk">
+              <div class="macro-title">Valgud (30%)</div>
+              <div class="macro-val" id="targetProtein">169 g</div>
+            </div>
+            <div class="macro-card sysi">
+              <div class="macro-title">Süsivesikud (45%)</div>
+              <div class="macro-val" id="targetCarbs">253 g</div>
+            </div>
+            <div class="macro-card rasv">
+              <div class="macro-title">Rasvad (25%)</div>
+              <div class="macro-val" id="targetFat">63 g</div>
+            </div>
+          </div>
+
+          <!-- Progressiriba -->
+          <div class="progress-bar-container">
+            <div class="progress-header">
+              <span>Tänane tarbimine</span>
+              <span id="progressText">0 / 2250 kcal</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressBar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Toidupäevik -->
+    <div class="card">
+      <h2>3. Toidupäevik</h2>
+
+      <!-- Kiirvalikud -->
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Kiirvalikud:</div>
+      <div class="quick-add">
+        <button class="chip" onclick="quickAdd('Kanafilee (150g)', 247, 46, 0, 4)">🍗 Kanafilee (150g)</button>
+        <button class="chip" onclick="quickAdd('Muna (2 tk)', 144, 12, 1, 10)">🥚 Muna (2 tk)</button>
+        <button class="chip" onclick="quickAdd('Kodujuust 4% (200g)', 206, 28, 6, 8)">🥣 Kodujuust (200g)</button>
+        <button class="chip" onclick="quickAdd('Kaerahelbepuder (250g)', 220, 8, 38, 4)">🥣 Kaerahelbepuder</button>
+        <button class="chip" onclick="quickAdd('Õun (1 tk)', 95, 0, 25, 0)">🍎 Õun</button>
+        <button class="chip" onclick="quickAdd('Banaan (1 tk)', 105, 1, 27, 0)">🍌 Banaan</button>
+      </div>
+
+      <!-- Käsitsi lisamine -->
+      <form id="foodForm" onsubmit="addCustomFood(event)">
+        <div class="form-row">
+          <div class="form-group" style="grid-column: span 2;">
+            <input type="text" id="foodName" placeholder="Toidu nimetus" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><input type="number" id="foodCal" placeholder="Kalorid (kcal)" required /></div>
+          <div class="form-group"><input type="number" id="foodP" placeholder="Valgud (g)" value="0" /></div>
+          <div class="form-group"><input type="number" id="foodC" placeholder="Süsiv. (g)" value="0" /></div>
+          <div class="form-group"><input type="number" id="foodF" placeholder="Rasvad (g)" value="0" /></div>
+        </div>
+        <button type="submit" class="btn btn-secondary">Lisa toidukord</button>
+      </form>
+
+      <!-- Toidulist -->
+      <table class="food-table">
+        <thead>
+          <tr>
+            <th>Toit</th>
+            <th>Kcal</th>
+            <th>Valk</th>
+            <th>Süsiv.</th>
+            <th>Rasv</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="foodList">
+          <!-- Toidud ilmuvad siia -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let currentTarget = 2250;
+    let loggedFoods = [];
+
+    function toggleGender(gender) {
+      document.getElementById('labelMale').classList.toggle('active', gender === 'male');
+      document.getElementById('labelFemale').classList.toggle('active', gender === 'female');
+    }
+
+    function calculateTarget() {
+      const isMale = document.querySelector('input[name="gender"]:checked').value === 'male';
+      const age = parseFloat(document.getElementById('age').value) || 0;
+      const height = parseFloat(document.getElementById('height').value) || 0;
+      const weight = parseFloat(document.getElementById('weight').value) || 0;
+      const activity = parseFloat(document.getElementById('activity').value);
+      const goal = document.getElementById('goal').value;
+
+      if (!age || !height || !weight) return;
+
+      // Mifflin-St Jeori valem
+      let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+      bmr += isMale ? 5 : -161;
+
+      let tdee = bmr * activity;
+
+      if (goal === 'lose') tdee -= 500;
+      if (goal === 'gain') tdee += 400;
+
+      currentTarget = Math.round(tdee);
+
+      // Makrode arvutus (30% V, 45% S, 25% R)
+      const proteinGrams = Math.round((currentTarget * 0.30) / 4);
+      const carbsGrams = Math.round((currentTarget * 0.45) / 4);
+      const fatGrams = Math.round((currentTarget * 0.25) / 9);
+
+      document.getElementById('targetCal').innerHTML = `${currentTarget} <span style="font-size: 1.2rem;">kcal</span>`;
+      document.getElementById('bmrText').innerText = `BMR (baasainevahetus): ~${Math.round(bmr)} kcal`;
+      document.getElementById('targetProtein').innerText = `${proteinGrams} g`;
+      document.getElementById('targetCarbs').innerText = `${carbsGrams} g`;
+      document.getElementById('targetFat').innerText = `${fatGrams} g`;
+
+      updateTrackerUI();
+    }
+
+    function addFoodItem(name, cal, p, c, f) {
+      loggedFoods.push({ id: Date.now(), name, cal: Number(cal), p: Number(p), c: Number(c), f: Number(f) });
+      updateTrackerUI();
+    }
+
+    function quickAdd(name, cal, p, c, f) {
+      addFoodItem(name, cal, p, c, f);
+    }
+
+    function addCustomFood(e) {
+      e.preventDefault();
+      const name = document.getElementById('foodName').value;
+      const cal = document.getElementById('foodCal').value;
+      const p = document.getElementById('foodP').value || 0;
+      const c = document.getElementById('foodC').value || 0;
+      const f = document.getElementById('foodF').value || 0;
+
+      addFoodItem(name, cal, p, c, f);
+
+      document.getElementById('foodForm').reset();
+    }
+
+    function removeFood(id) {
+      loggedFoods = loggedFoods.filter(item => item.id !== id);
+      updateTrackerUI();
+    }
+
+    function updateTrackerUI() {
+      const tbody = document.getElementById('foodList');
+      tbody.innerHTML = '';
+
+      let totalCal = 0;
+
+      loggedFoods.forEach(item => {
+        totalCal += item.cal;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong></td>
+          <td>${item.cal} kcal</td>
+          <td>${item.p}g</td>
+          <td>${item.c}g</td>
+          <td>${item.f}g</td>
+          <td><button class="btn-delete" onclick="removeFood(${item.id})">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Uuenda progressiriba
+      const progressPercent = Math.min(Math.round((totalCal / currentTarget) * 100), 100);
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = `${progressPercent}%`;
+
+      if (totalCal > currentTarget) {
+        progressBar.classList.add('over');
+      } else {
+        progressBar.classList.remove('over');
+      }
+
+      document.getElementById('progressText').innerText = `${totalCal} / ${currentTarget} kcal`;
+    }
+
+    // Algne arvutus lehe laadimisel
+    calculateTarget();
+  </script>
+</body>
+</html>
